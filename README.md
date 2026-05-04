@@ -1,75 +1,104 @@
-# Quidax Market Analytics
+# 📊 Quidax Market Analytics
 
-![Status](https://img.shields.io/badge/Status-In%20Progress-yellow)
+Real-time Nigerian crypto market intelligence dashboard powered by the Quidax public API. Features the **Market Pulse Index™** — a proprietary composite score for market health.
 
-A public-facing analytics tool that pulls live market data from the Quidax public API and displays real-time crypto market intelligence for Nigerian Naira (NGN) trading pairs. Features price tracking, order book depth visualisation, volatility metrics, and an original "Market Pulse" composite score.
+---
 
-## Who this is for
+## Architecture
 
-Nigerian crypto traders, fintech analysts, Quidax users who want deeper market insight, and anyone interested in NGN-denominated crypto market data.
+```
+quidax_api.py (API Wrapper)
+    ├── get_ticker()          → Single pair data
+    ├── get_all_tickers()     → All market tickers
+    ├── get_order_book()      → Bid/ask depth
+    ├── get_recent_trades()   → Trade history
+    ├── get_ohlcv()           → Candlestick data
+    ├── get_market_summary()  → Computed market overview
+    └── compute_market_pulse()→ Market Pulse Index™
+                    ↓
+app.py (Streamlit Dashboard)
+    ├── Market Pulse gauge
+    ├── KPI cards
+    ├── Market overview table
+    ├── Candlestick charts (Plotly)
+    └── Order book depth chart
+```
 
-## Features
+## Tech Stack
 
-- **Live price tracking** — BTC/NGN, ETH/NGN, and USDT/NGN with 24h change
-- **Order book depth** — bid/ask spread visualisation
-- **7-day volatility** — rolling volatility metric for each trading pair
-- **Market Pulse score** — an original composite metric combining spread, volume, and volatility to give a single health reading per pair
+| Component | Tool | Purpose |
+|-----------|------|---------|
+| API Client | requests | Quidax REST API integration |
+| Dashboard | Streamlit | Interactive web UI |
+| Charts | Plotly | Candlestick, gauge, depth charts |
+| Data | Pandas, NumPy | Processing and aggregation |
+| CI | GitHub Actions | Flake8 linting |
 
-## Tech stack
+## Market Pulse Index™
 
-- **Python** — core logic
-- **Requests** — Quidax API integration
-- **Pandas** — data processing
-- **Streamlit** — interactive web dashboard
-- **Plotly** — charts and visualisation
+A composite score (0-100) measuring overall Quidax market activity:
 
-## How to run locally
+| Component | Weight | Measures |
+|-----------|--------|----------|
+| Spread Health | 0-40 pts | Avg bid-ask spread across pairs |
+| Volume Distribution | 0-30 pts | HHI-inspired concentration metric |
+| Momentum | 0-30 pts | Average 24h price change direction |
+
+**Interpretation:**
+- 🟢 75-100: **Strong** — Tight spreads, distributed volume, positive momentum
+- 🔵 50-74: **Healthy** — Normal market conditions
+- 🟡 25-49: **Weak** — Wide spreads or concentrated volume
+- 🔴 0-24: **Critical** — Low liquidity, extreme spreads
+
+## Key Features
+
+### API Wrapper (`quidax_api.py`)
+- Clean Python interface for all Quidax public endpoints
+- Market summary with computed spread, change, and range metrics
+- Error handling with custom `QuidaxAPIError` exception
+- 10 supported trading pairs (BTC, ETH, USDT, USDC, XRP, BNB, SOL, TRX)
+
+### Dashboard (`app.py`)
+- **Market Pulse gauge** — Animated indicator with color-coded ranges
+- **KPI cards** — Active pairs, avg spread, 24h change, market status
+- **Market table** — All pairs with price, bid, ask, spread, volume, change
+- **Candlestick charts** — 1H candles with volume subplot (48h window)
+- **Order book depth** — Cumulative bid/ask visualization
+- **Auto-refresh** — Optional 60s polling
+- Dark theme, Inter font, professional styling
+
+## Quick Start
 
 ```bash
-# Clone the repo
-git clone https://github.com/JimiR3d/quidax-market-analytics.git
-cd quidax-market-analytics
-
-# Install dependencies
 pip install -r requirements.txt
 
 # Run the dashboard
 streamlit run app.py
 ```
 
-The app opens at `http://localhost:8501` with live data from Quidax.
+The dashboard opens at `http://localhost:8501` and fetches live data from Quidax.
 
-## Quidax API
+## API Endpoints Used
 
-This tool uses the [Quidax public API](https://www.quidax.com/api/v1/) — no authentication required.
+| Endpoint | Method |
+|----------|--------|
+| `/markets/tickers` | `get_all_tickers()` |
+| `/markets/tickers/{pair}` | `get_ticker(pair)` |
+| `/markets/{pair}/order_book` | `get_order_book(pair)` |
+| `/markets/{pair}/trades` | `get_recent_trades(pair)` |
+| `/markets/{pair}/k_line` | `get_ohlcv(pair)` |
 
-| Endpoint | Purpose |
-|----------|---------|
-| `GET /markets` | List all available markets |
-| `GET /markets/{market}/tickers` | Ticker data (price, volume, change) |
-| `GET /markets/{market}/order_book` | Order book (bids and asks) |
+## Project Context
 
-## Live demo
+This project demonstrates:
+- **API integration** — RESTful API consumption with error handling
+- **Financial analytics** — Custom market health scoring (HHI, momentum)
+- **Real-time dashboards** — Streamlit with auto-refresh and live data
+- **Data visualization** — Professional candlestick, gauge, and depth charts
 
-_Coming soon — will be deployed to Streamlit Community Cloud._
+Built as part of my data analyst portfolio. Uses only Quidax public API — no authentication required.
 
-## Project structure
+## Author
 
-```
-quidax-market-analytics/
-├── app.py                  # Main Streamlit app
-├── api.py                  # Quidax API wrapper functions
-├── metrics.py              # Market pulse score computation
-├── requirements.txt
-└── README.md
-```
-
-## Why I built this
-
-I built this to demonstrate that I can take a public API, extract meaningful analytical value from it, and present it in a tool that's genuinely useful — not just a code exercise. The Market Pulse score is original thinking: a composite metric I designed to distill multiple market health signals into a single actionable number.
-
-Built by [Jimi Aboderin](https://github.com/JimiR3d).
-
-## License
-
-MIT
+**Jimi Aboderin**  
+[LinkedIn](https://www.linkedin.com/in/oluwafolajinmi-aboderin-695848249/) · [GitHub](https://github.com/JimiR3d) · folajinmi13@gmail.com
